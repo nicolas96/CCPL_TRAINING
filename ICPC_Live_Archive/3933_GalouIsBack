@@ -1,0 +1,127 @@
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.util.Arrays;
+import java.util.StringTokenizer;
+
+public class galou {
+
+	static int[][] vistos;
+	static String[][] matriz;
+	static int[][] mov = { { 0, -1 }, { 1, -1 }, { -1, 0 }, { 1, 0 }, { -1, 1 }, { 0, 1 } };
+
+	public static void main(String[] args) throws IOException {
+		BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
+		PrintWriter out = new PrintWriter(new OutputStreamWriter(System.out));
+		String linea = in.readLine();
+		while (linea != null && !linea.trim().equals("0 0")) {
+			StringTokenizer toks = new StringTokenizer(linea);
+			int rows = Integer.parseInt(toks.nextToken());
+			int cols = Integer.parseInt(toks.nextToken());
+			matriz = new String[rows][cols];
+			vistos = new int[rows][cols];
+			for (int i = 0; i < rows; i++) {
+				linea = in.readLine();
+				for (int j = 0; j < cols; j++) {
+					matriz[i][j] = linea.charAt(j) + "";
+				}
+			}
+			respuesta();
+			out.println();
+			for (int i = 0; i < rows; i++) {
+				for (int j = 0; j < cols; j++) {
+					if(matriz[i][j].equals("*"))
+						matriz[i][j] = "F";
+					out.print(matriz[i][j]);
+					
+				}
+				out.println();
+			}
+
+			linea = in.readLine();
+		}
+		out.close();
+	}
+
+	private static void respuesta() {
+		for (int i = 0; i < matriz.length; i++) {
+			for (int j = 0; j < matriz[0].length; j++) {
+				if (matriz[i][j].equals("I") && vistos[i][j] == 0) {
+					matriz[i][j] = "(";
+					bfs1(i, j);
+				}
+
+			}
+		}
+
+	}
+
+	private static void bfs1(int i, int j) {
+		vistos[i][j] = 1;
+		for (int k = 0; k < mov.length; k++) {
+			int i2 = i + mov[k][0];
+			int j2 = j + mov[k][1];
+			if (validar(i2, j2)) {
+				if (hayConflicto(i, j, i2, j2)) {
+					matriz[i2][j2] = "B";
+					bfs2(i2, j2);
+				} else if (vistos[i2][j2] == 0) {
+					if (matriz[i2][j2].equals("*")) {
+						marcarEn(i, j, i2, j2);
+						bfs1(i2, j2);
+					}
+				}
+			}
+		}
+
+	}
+
+	private static void bfs2(int i, int j) {
+		vistos[i][j] = -1;
+		for (int k = 0; k < mov.length; k++) {
+			int i2 = i + mov[k][0];
+			int j2 = j + mov[k][1];
+			if (validar(i2, j2)) {
+				if (vistos[i2][j2] != -1) {
+					if (matriz[i2][j2].equals("*") || matriz[i2][j2].equals("(") || matriz[i2][j2].equals(")")
+							|| matriz[i2][j2].equals("I")) {
+						matriz[i2][j2] = "B";
+						bfs2(i2, j2);
+					}
+
+				}
+			}
+		}
+	}
+
+	private static boolean hayConflicto(int i, int j, int i2, int j2) {
+		if (matriz[i][j].equals("(")) {
+			if (matriz[i2][j2].equals("(") || matriz[i2][j2].equals("I")) {
+				return true;
+			}
+		} else {
+			if (matriz[i2][j2].equals(")")) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	private static void marcarEn(int i, int j, int i2, int j2) {
+		if (matriz[i][j].equals("("))
+			matriz[i2][j2] = ")";
+		else
+			matriz[i2][j2] = "(";
+
+	}
+
+	public static boolean validar(int x, int y) {
+		if (x >= 0 && x < vistos.length && y >= 0 && y < vistos[0].length)
+			return true;
+		else
+			return false;
+	}
+
+}
